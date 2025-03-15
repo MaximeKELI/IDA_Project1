@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Salles de Cours</title>
+    <link rel="stylesheet" href="ida.css">
+</head>
+<img src="../images/esaimage.png" alt="ESA Image">
+
+<body>
+    <header>
+        <h1>Gestion des Salles de Cours</h1>
+    </header>
+
+    <main>
+        <section id="salles">
+            <h2>Liste des Salles</h2>
+            <div id="salles-list"></div>
+        </section>
+
+        <section id="ajout-cours">
+            <h2>Ajouter un Cours</h2>
+            <form id="cours-form">
+                <label for="salle">Salle:</label>
+                <select id="salle" name="salle" required></select>
+
+                <label for="cours">Nom du Cours:</label>
+                <input type="text" id="cours" name="cours" required>
+
+                <label for="professeur">Professeur:</label>
+                <input type="text" id="professeur" name="professeur" required>
+
+                <label for="jour">Jour:</label>
+                <select id="jour" name="jour" required>
+                    <option value="Lundi">Lundi</option>
+                    <option value="Mardi">Mardi</option>
+                    <option value="Mercredi">Mercredi</option>
+                    <option value="Jeudi">Jeudi</option>
+                    <option value="Vendredi">Vendredi</option>
+                    <option value="Samedi">Samedi</option>
+                </select>
+
+                <label for="heure-debut">Heure de début:</label>
+                <input type="time" id="heure-debut" name="heure-debut" required>
+
+                <label for="heure-fin">Heure de fin:</label>
+                <input type="time" id="heure-fin" name="heure-fin" required>
+
+                <button type="submit">Ajouter le Cours</button>
+            </form>
+        </section>
+
+        <section id="emploi-du-temps">
+            <h2>Emploi du Temps</h2>
+            <table id="emploi-du-temps-table">
+                <thead>
+                    <tr>
+                        <th>Salle</th>
+                        <th>Cours</th>
+                        <th>Professeur</th>
+                        <th>Jour</th>
+                        <th>Heure de début</th>
+                        <th>Heure de fin</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+    </main>
+
+    <script src="ida.js"></script>
+</body>
+</html>

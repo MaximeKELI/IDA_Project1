@@ -1,0 +1,161 @@
+/* Couleurs principales */
+:root {
+    --primary-color: #4a90e2;
+    --secondary-color: #f4f4f4;
+    --background-color: #ffffff;
+    --text-color: #333333;
+    --hover-color: #357abd;
+    --error-color: #ff4d4d;
+}
+
+/* Reset et styles de base */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+main {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+section {
+    margin-bottom: 30px;
+    background-color: var(--background-color);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-size: 1.5em;
+}
+
+/* Liste des salles */
+#salles-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.salle {
+    background-color: var(--background-color);
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 10px;
+    width: calc(33.333% - 20px);
+    box-sizing: border-box;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.salle:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Formulaire */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+label {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+input, select, button {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1em;
+    transition: border-color 0.3s;
+}
+
+input:focus, select:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+button {
+    background-color: var(--primary-color);
+    color: white;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: var(--hover-color);
+}
+
+/* Tableau */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+th {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+tr:nth-child(even) {
+    background-color: var(--secondary-color);
+}
+
+tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Boutons d'actions */
+.actions button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    background-color: var(--error-color);
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.actions button:hover {
+    background-color: #cc0000;
+}
+
+
+
+body {
+    background-image: url('../images/etudimage.webp');
+    background-size: cover; /* pour couvrir tout l'écran */
+    background-position: center; /* pour centrer l'image */
+    background-repeat: no-repeat; /* pour ne pas répéter */
+    height: 100vh; /* hauteur de l'écran */
+    margin: 0; /* enlever les marges */
+    padding: 0;
+}
