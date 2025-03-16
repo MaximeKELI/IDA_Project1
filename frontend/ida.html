@@ -15,11 +15,24 @@
     </header>
 
     <main>
+        <!-- Sélection de la filière -->
+        <section id="filiere-section">
+            <h2>Filière</h2>
+            <label for="filiere">Choisir une filière:</label>
+            <select id="filiere" name="filiere" required>
+                <!-- Aucune option prédéfinie -->
+            </select>
+            <input type="text" id="nouvelle-filiere" placeholder="Entrez une nouvelle filière">
+            <button id="ajouter-filiere">Ajouter une filière</button>
+        </section>
+
+        <!-- Liste des salles -->
         <section id="salles">
             <h2>Liste des Salles</h2>
             <div id="salles-list"></div>
         </section>
 
+        <!-- Ajouter un cours -->
         <section id="ajout-cours">
             <h2>Ajouter un Cours</h2>
             <form id="cours-form">
@@ -52,12 +65,14 @@
             </form>
         </section>
 
+        <!-- Emploi du temps -->
         <section id="emploi-du-temps">
             <h2>Emploi du Temps</h2>
             <button id="telecharger-pdf">Télécharger l'emploi du temps en PDF</button>
             <table id="emploi-du-temps-table">
                 <thead>
                     <tr>
+                        <th>Filière</th>
                         <th>Salle</th>
                         <th>Cours</th>
                         <th>Professeur</th>
@@ -72,8 +87,10 @@
         </section>
     </main>
 
-    <!-- Charger jsPDF avant votre script -->
+    <!-- Charger jsPDF et le plugin autoTable -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <!-- Votre script JavaScript -->
     <script src="ida.js"></script>
 </body>
 </html>
