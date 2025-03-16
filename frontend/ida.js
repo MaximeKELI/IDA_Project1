@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const filiereSelect = document.getElementById('filiere');
     const nouvelleFiliereInput = document.getElementById('nouvelle-filiere');
     const ajouterFiliereBtn = document.getElementById('ajouter-filiere');
+    const afficherTousBtn = document.getElementById('afficher-tous');
 
     // Données par filière
     let emploiDuTempsParFiliere = {};
@@ -58,8 +59,8 @@ document.addEventListener('DOMContentLoaded', function () {
             emploiDuTempsParFiliere[filiere] = []; // Créer un tableau vide pour la filière
         }
 
-        // Ajouter le cours à la filière sélectionnée
-        emploiDuTempsParFiliere[filiere].push({
+        // Créer un nouvel objet cours
+        const nouveauCours = {
             filiere,
             salle,
             cours,
@@ -67,10 +68,13 @@ document.addEventListener('DOMContentLoaded', function () {
             jour,
             heureDebut,
             heureFin,
-        });
+        };
 
-        // Mettre à jour l'affichage
-        afficherEmploiDuTemps(filiere);
+        // Ajouter le cours à la filière sélectionnée
+        emploiDuTempsParFiliere[filiere].push(nouveauCours);
+
+        // Mettre à jour l'affichage en ajoutant uniquement le nouveau cours
+        afficherEmploiDuTemps(filiere, nouveauCours);
         coursForm.reset();
     });
 
@@ -79,6 +83,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const row = button.closest('tr');
         const index = row.rowIndex - 1; // Ignorer la ligne d'en-tête
         emploiDuTempsParFiliere[filiere].splice(index, 1);
+
+        // Mettre à jour l'affichage complet après suppression
         afficherEmploiDuTemps(filiere);
     };
 
@@ -96,12 +102,13 @@ document.addEventListener('DOMContentLoaded', function () {
         let data = [];
         data.push(headers);
 
-        // Récupérer les données du tableau pour la filière sélectionnée
-        const filiere = filiereSelect.value;
-        if (emploiDuTempsParFiliere[filiere]) {
-            emploiDuTempsParFiliere[filiere].forEach(cours => {
-                data.push([cours.filiere, cours.salle, cours.cours, cours.professeur, cours.jour, cours.heureDebut, cours.heureFin]);
-            });
+        // Parcourir toutes les filières
+        for (const filiere in emploiDuTempsParFiliere) {
+            if (emploiDuTempsParFiliere[filiere].length > 0) {
+                emploiDuTempsParFiliere[filiere].forEach(cours => {
+                    data.push([cours.filiere, cours.salle, cours.cours, cours.professeur, cours.jour, cours.heureDebut, cours.heureFin]);
+                });
+            }
         }
 
         // Générer le tableau dans le PDF
@@ -112,50 +119,55 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         // Télécharger le PDF
-        doc.save(`emploi_du_temps_${filiere}.pdf`);
+        doc.save(`emploi_du_temps.pdf`);
+    });
+
+    // Afficher tous les cours
+    afficherTousBtn.addEventListener('click', function () {
+        afficherEmploiDuTemps();
     });
 
     // Afficher l'emploi du temps pour la filière sélectionnée
-    function afficherEmploiDuTemps(filiere) {
-        const tbody = emploiDuTempsTable.getElementsByTagName('tbody')[0];
-
-        // Vérifier si tbody existe
-        if (!tbody) {
-            console.error("L'élément <tbody> n'existe pas dans le tableau.");
-            return;
-        }
-
+    function afficherEmploiDuTemps(filiere = null, nouveauCours = null) {
         tbody.innerHTML = ''; // Vider le contenu actuel du tbody
 
-        // Vérifier si la filière existe et a des cours
-        if (emploiDuTempsParFiliere[filiere] && emploiDuTempsParFiliere[filiere].length > 0) {
-            // Ajouter les lignes de données pour la filière sélectionnée
-            emploiDuTempsParFiliere[filiere].forEach((cours, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${cours.filiere}</td>
-                    <td>${cours.salle}</td>
-                    <td>${cours.cours}</td>
-                    <td>${cours.professeur}</td>
-                    <td>${cours.jour}</td>
-                    <td>${cours.heureDebut}</td>
-                    <td>${cours.heureFin}</td>
-                    <td class="actions">
-                        <button onclick="supprimerCours(this, '${filiere}')">Supprimer</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        } else {
-            // Afficher un message si aucune donnée n'est disponible
+        let hasData = false;
+
+        // Parcourir toutes les filières
+        for (const f in emploiDuTempsParFiliere) {
+            if (filiere && f !== filiere) continue; // Filtrer par filière si spécifiée
+
+            if (emploiDuTempsParFiliere[f].length > 0) {
+                hasData = true;
+                emploiDuTempsParFiliere[f].forEach((cours, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${cours.filiere}</td>
+                        <td>${cours.salle}</td>
+                        <td>${cours.cours}</td>
+                        <td>${cours.professeur}</td>
+                        <td>${cours.jour}</td>
+                        <td>${cours.heureDebut}</td>
+                        <td>${cours.heureFin}</td>
+                        <td class="actions">
+                            <button onclick="supprimerCours(this, '${f}')">Supprimer</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+
+        // Afficher un message si aucune donnée n'est disponible
+        if (!hasData) {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td colspan="8" style="text-align: center;">Aucun cours disponible pour cette filière.</td>
+                <td colspan="8" style="text-align: center;">Aucun cours disponible.</td>
             `;
             tbody.appendChild(row);
         }
     }
 
     // Afficher l'emploi du temps initial (vide)
-    afficherEmploiDuTemps('');
+    afficherEmploiDuTemps();
 });

@@ -16,6 +16,24 @@ body {
     background-color: var(--secondary-color);
     color: var(--text-color);
     line-height: 1.6;
+    background-image: url('../images/etudimage.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    position: relative;
+    z-index: 1;
+}
+
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    z-index: -1;
 }
 
 header {
@@ -38,6 +56,7 @@ section {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 h2 {
@@ -61,12 +80,13 @@ h2 {
     width: calc(33.333% - 20px);
     box-sizing: border-box;
     text-align: center;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
 }
 
 .salle:hover {
     transform: translateY(-5px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    background-color: rgba(74, 144, 226, 0.1);
 }
 
 /* Formulaire */
@@ -86,12 +106,13 @@ input, select, button {
     border: 1px solid #ddd;
     border-radius: 5px;
     font-size: 1em;
-    transition: border-color 0.3s;
+    transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 input:focus, select:focus {
     border-color: var(--primary-color);
     outline: none;
+    box-shadow: 0 0 5px rgba(74, 144, 226, 0.5);
 }
 
 button {
@@ -99,11 +120,12 @@ button {
     color: white;
     cursor: pointer;
     border: none;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, transform 0.2s;
 }
 
 button:hover {
     background-color: var(--hover-color);
+    transform: translateY(-2px);
 }
 
 /* Tableau */
@@ -125,11 +147,11 @@ th {
 }
 
 tr:nth-child(even) {
-    background-color: var(--secondary-color);
+    background-color: rgba(244, 244, 244, 0.8);
 }
 
 tr:hover {
-    background-color: #f1f1f1;
+    background-color: rgba(241, 241, 241, 0.9);
 }
 
 /* Boutons d'actions */
@@ -148,14 +170,8 @@ tr:hover {
     background-color: #cc0000;
 }
 
-
-
-body {
-    background-image: url('../images/etudimage.webp');
-    background-size: cover; /* pour couvrir tout l'écran */
-    background-position: center; /* pour centrer l'image */
-    background-repeat: no-repeat; /* pour ne pas répéter */
-    height: 100vh; /* hauteur de l'écran */
-    margin: 0; /* enlever les marges */
-    padding: 0;
+.error-message {
+    color: var(--error-color);
+    font-size: 0.9em;
+    margin-top: 5px;
 }
