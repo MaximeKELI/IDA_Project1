@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace GestionSalles.Models;
 
@@ -8,11 +9,15 @@ public class Cours
 
     [Required]
     public int FiliereId { get; set; }
-    public Filiere Filiere { get; set; } = null!;
+
+    [JsonIgnore]
+    public Filiere? Filiere { get; set; }
 
     [Required]
     public int SalleId { get; set; }
-    public Salle Salle { get; set; } = null!;
+
+    [JsonIgnore]
+    public Salle? Salle { get; set; }
 
     [Required]
     [StringLength(100)]

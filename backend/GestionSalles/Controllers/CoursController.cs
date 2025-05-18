@@ -52,31 +52,40 @@ public class CoursController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Cours>> PostCours(Cours cours)
+    public async Task<ActionResult<Cours>> PostCours([FromBody] Cours cours)
     {
         // Vérifier si la filière existe
-        if (!await _context.Filieres.AnyAsync(f => f.Id == cours.FiliereId))
+        var filiere = await _context.Filieres.FindAsync(cours.FiliereId);
+        if (filiere == null)
         {
             return BadRequest("Filière invalide");
         }
+        cours.Filiere = filiere;
 
         // Vérifier si la salle existe
-        if (!await _context.Salles.AnyAsync(s => s.Id == cours.SalleId))
+        var salle = await _context.Salles.FindAsync(cours.SalleId);
+        if (salle == null)
         {
             return BadRequest("Salle invalide");
         }
+        cours.Salle = salle;
+
+        // Récupérer tous les cours pour la même salle et le même jour
+        var coursExistants = await _context.Cours
+            .Where(c => c.SalleId == cours.SalleId && c.Jour == cours.Jour)
+            .ToListAsync();
 
         // Vérifier les conflits d'horaires
-        var conflit = await _context.Cours
-            .AnyAsync(c => c.SalleId == cours.SalleId 
-                && c.Jour == cours.Jour
-                && ((c.HeureDebut <= cours.HeureDebut && cours.HeureDebut < c.HeureFin)
-                    || (c.HeureDebut < cours.HeureFin && cours.HeureFin <= c.HeureFin)
-                    || (cours.HeureDebut <= c.HeureDebut && c.HeureFin <= cours.HeureFin)));
-
-        if (conflit)
+        foreach (var c in coursExistants)
         {
-            return BadRequest("Il y a un conflit d'horaire pour cette salle");
+            bool conflit = (cours.HeureDebut <= c.HeureDebut && c.HeureDebut < cours.HeureFin) ||
+                          (cours.HeureDebut < c.HeureFin && c.HeureFin <= cours.HeureFin) ||
+                          (c.HeureDebut <= cours.HeureDebut && cours.HeureFin <= c.HeureFin);
+
+            if (conflit)
+            {
+                return BadRequest($"Il y a un conflit d'horaire avec le cours '{c.Nom}' ({c.HeureDebut:hh\\:mm} - {c.HeureFin:hh\\:mm})");
+            }
         }
 
         _context.Cours.Add(cours);
