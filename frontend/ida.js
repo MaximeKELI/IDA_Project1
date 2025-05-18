@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', async function () {
     const sallesList = document.getElementById('salles-list');
     const salleSelect = document.getElementById('salle');
+    const searchSalleInput = document.getElementById('search-salle');
     const coursForm = document.getElementById('cours-form');
     const emploiDuTempsTable = document.getElementById('emploi-du-temps-table');
     const tbody = emploiDuTempsTable.getElementsByTagName('tbody')[0];
@@ -9,6 +10,53 @@ document.addEventListener('DOMContentLoaded', async function () {
     const nouvelleFiliereInput = document.getElementById('nouvelle-filiere');
     const ajouterFiliereBtn = document.getElementById('ajouter-filiere');
     const afficherTousBtn = document.getElementById('afficher-tous');
+    const nouvelleSalleInput = document.getElementById('nouvelle-salle');
+    const ajouterSalleBtn = document.getElementById('ajouter-salle');
+
+    // Fonction pour afficher les salles
+    function afficherSalles(salles) {
+        sallesList.innerHTML = '';
+        salleSelect.innerHTML = '<option value="">Sélectionnez une salle</option>';
+        
+        salles.forEach(salle => {
+            // Ajouter à la liste des salles
+            const salleDiv = document.createElement('div');
+            salleDiv.className = 'salle highlight-hover';
+            salleDiv.textContent = salle.nom;
+            salleDiv.dataset.id = salle.id;
+            
+            // Ajouter l'événement de clic
+            salleDiv.addEventListener('click', () => {
+                // Retirer la sélection précédente
+                document.querySelectorAll('.salle').forEach(s => s.classList.remove('selected'));
+                // Ajouter la sélection
+                salleDiv.classList.add('selected');
+                // Mettre à jour le select
+                salleSelect.value = salle.id;
+            });
+            
+            sallesList.appendChild(salleDiv);
+
+            // Ajouter au select
+            const option = document.createElement('option');
+            option.value = salle.id;
+            option.textContent = salle.nom;
+            salleSelect.appendChild(option);
+        });
+    }
+
+    // Gérer la sélection dans le select
+    salleSelect.addEventListener('change', function() {
+        const selectedId = this.value;
+        document.querySelectorAll('.salle').forEach(salleDiv => {
+            if (salleDiv.dataset.id === selectedId) {
+                salleDiv.classList.add('selected');
+                salleDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } else {
+                salleDiv.classList.remove('selected');
+            }
+        });
+    });
 
     // Charger les données initiales
     try {
@@ -23,25 +71,24 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         // Charger les salles
         const salles = await getSalles();
-        salles.forEach(salle => {
-            // Ajouter à la liste des salles
-            const salleDiv = document.createElement('div');
-            salleDiv.className = 'salle';
-            salleDiv.textContent = salle.nom;
-            sallesList.appendChild(salleDiv);
-
-            // Ajouter au select
-            const option = document.createElement('option');
-            option.value = salle.id;
-            option.textContent = salle.nom;
-            salleSelect.appendChild(option);
-        });
+        afficherSalles(salles);
 
         // Charger tous les cours
         await afficherEmploiDuTemps();
     } catch (error) {
         showNotification(error.message, 'error');
     }
+
+    // Gérer la recherche de salles
+    searchSalleInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const salles = Array.from(sallesList.children);
+        
+        salles.forEach(salleDiv => {
+            const salleName = salleDiv.textContent.toLowerCase();
+            salleDiv.style.display = salleName.includes(searchTerm) ? 'block' : 'none';
+        });
+    });
 
     // Gérer l'ajout d'une nouvelle filière
     ajouterFiliereBtn.addEventListener('click', async function () {
@@ -61,26 +108,101 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     });
 
+    // Gérer l'ajout d'une nouvelle salle
+    ajouterSalleBtn.addEventListener('click', async function () {
+        const nouvelleSalle = nouvelleSalleInput.value.trim();
+        if (nouvelleSalle) {
+            try {
+                const salle = await ajouterSalle(nouvelleSalle);
+                
+                // Ajouter à la liste des salles
+                const salleDiv = document.createElement('div');
+                salleDiv.className = 'salle highlight-hover';
+                salleDiv.textContent = salle.nom;
+                sallesList.appendChild(salleDiv);
+
+                // Ajouter au select
+                const option = document.createElement('option');
+                option.value = salle.id;
+                option.textContent = salle.nom;
+                salleSelect.appendChild(option);
+
+                nouvelleSalleInput.value = '';
+                showNotification('Salle ajoutée avec succès', 'success');
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        }
+    });
+
     // Gérer l'ajout d'un cours
     coursForm.addEventListener('submit', async function (event) {
         event.preventDefault();
 
+        // Validation des champs
+        const filiereId = parseInt(filiereSelect.value);
+        const salleId = parseInt(salleSelect.value);
+        const nom = document.getElementById('cours').value.trim();
+        const professeur = document.getElementById('professeur').value.trim();
+        const jour = document.getElementById('jour').value;
+        const heureDebut = document.getElementById('heure-debut').value;
+        const heureFin = document.getElementById('heure-fin').value;
+
+        console.log('Valeurs des champs:', {
+            filiereId,
+            salleId,
+            nom,
+            professeur,
+            jour,
+            heureDebut,
+            heureFin
+        });
+
+        // Vérification que tous les champs sont remplis
+        if (!filiereId || !salleId || !nom || !professeur || !jour || !heureDebut || !heureFin) {
+            showNotification('Veuillez remplir tous les champs', 'error');
+            return;
+        }
+
+        // Convertir les heures en format TimeSpan (HH:mm:ss)
+        const heureDebutTimeSpan = heureDebut + ':00';
+        const heureFinTimeSpan = heureFin + ':00';
+
         const nouveauCours = {
-            filiereId: parseInt(filiereSelect.value),
-            salleId: parseInt(salleSelect.value),
-            nom: document.getElementById('cours').value,
-            professeur: document.getElementById('professeur').value,
-            jour: document.getElementById('jour').value,
-            heureDebut: document.getElementById('heure-debut').value,
-            heureFin: document.getElementById('heure-fin').value
+            FiliereId: filiereId,
+            SalleId: salleId,
+            Nom: nom,
+            Professeur: professeur,
+            Jour: jour,
+            HeureDebut: heureDebutTimeSpan,
+            HeureFin: heureFinTimeSpan
         };
 
+        console.log('Tentative d\'ajout du cours:', nouveauCours);
+        console.log('JSON envoyé:', JSON.stringify(nouveauCours));
+
         try {
-            await ajouterCours(nouveauCours);
+            const response = await fetch(`${API_BASE_URL}/cours`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(nouveauCours),
+            });
+
+            console.log('Statut de la réponse:', response.status);
+            const responseText = await response.text();
+            console.log('Réponse du serveur:', responseText);
+
+            if (!response.ok) {
+                throw new Error(responseText || 'Erreur lors de l\'ajout du cours');
+            }
+
             coursForm.reset();
             await afficherEmploiDuTemps();
             showNotification('Cours ajouté avec succès', 'success');
         } catch (error) {
+            console.error('Erreur complète:', error);
             showNotification(error.message, 'error');
         }
     });
@@ -100,35 +222,66 @@ document.addEventListener('DOMContentLoaded', async function () {
     telechargerPdfBtn.addEventListener('click', async function () {
         try {
             const cours = await getCours();
+            console.log('Cours pour PDF:', cours);
+
+            // Charger toutes les filières et salles
+            const filieres = await getFilieres();
+            const salles = await getSalles();
+
+            // Créer des maps pour un accès rapide
+            const filieresMap = new Map(filieres.map(f => [f.id, f]));
+            const sallesMap = new Map(salles.map(s => [s.id, s]));
+
+            // Initialiser jsPDF
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
             // Titre du document
             doc.setFontSize(18);
-            doc.text("Emploi du Temps", 10, 10);
+            doc.text("Emploi du Temps", 10, 20);
 
             // Préparer les données pour le tableau
-            const data = cours.map(c => [
-                c.filiere.nom,
-                c.salle.nom,
-                c.nom,
-                c.professeur,
-                c.jour,
-                c.heureDebut,
-                c.heureFin
-            ]);
+            const data = cours.map(c => {
+                const filiere = filieresMap.get(c.filiereId);
+                const salle = sallesMap.get(c.salleId);
+                return [
+                    filiere ? filiere.nom : 'N/A',
+                    salle ? salle.nom : 'N/A',
+                    c.nom,
+                    c.professeur,
+                    c.jour,
+                    c.heureDebut.substring(0, 5),
+                    c.heureFin.substring(0, 5)
+                ];
+            });
 
             // Générer le tableau dans le PDF
             doc.autoTable({
-                startY: 20,
+                startY: 30,
                 head: [["Filière", "Salle", "Cours", "Professeur", "Jour", "Début", "Fin"]],
                 body: data,
+                theme: 'grid',
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 2
+                },
+                headStyles: {
+                    fillColor: [41, 128, 185],
+                    textColor: 255,
+                    fontSize: 9,
+                    fontStyle: 'bold'
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245]
+                }
             });
 
             // Télécharger le PDF
             doc.save('emploi_du_temps.pdf');
+            showNotification('PDF téléchargé avec succès', 'success');
         } catch (error) {
-            showNotification(error.message, 'error');
+            console.error('Erreur lors de la génération du PDF:', error);
+            showNotification('Erreur lors de la génération du PDF: ' + error.message, 'error');
         }
     });
 
@@ -142,8 +295,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         try {
             tbody.innerHTML = '';
             const cours = filiereId ? await getCoursByFiliere(filiereId) : await getCours();
+            console.log('Cours reçus:', cours);
 
-            if (cours.length === 0) {
+            if (!cours || cours.length === 0) {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td colspan="8" style="text-align: center;">Aucun cours disponible.</td>
@@ -152,23 +306,41 @@ document.addEventListener('DOMContentLoaded', async function () {
                 return;
             }
 
+            // Charger toutes les filières et salles
+            const filieres = await getFilieres();
+            const salles = await getSalles();
+
+            // Créer des maps pour un accès rapide
+            const filieresMap = new Map(filieres.map(f => [f.id, f]));
+            const sallesMap = new Map(salles.map(s => [s.id, s]));
+
             cours.forEach(cours => {
                 const row = document.createElement('tr');
+                const heureDebut = cours.heureDebut.substring(0, 5); // Garder seulement HH:mm
+                const heureFin = cours.heureFin.substring(0, 5); // Garder seulement HH:mm
+
+                // Récupérer la filière et la salle correspondantes
+                const filiere = filieresMap.get(cours.filiereId);
+                const salle = sallesMap.get(cours.salleId);
+
                 row.innerHTML = `
-                    <td>${cours.filiere.nom}</td>
-                    <td>${cours.salle.nom}</td>
+                    <td>${filiere ? filiere.nom : 'N/A'}</td>
+                    <td>${salle ? salle.nom : 'N/A'}</td>
                     <td>${cours.nom}</td>
                     <td>${cours.professeur}</td>
                     <td>${cours.jour}</td>
-                    <td>${cours.heureDebut}</td>
-                    <td>${cours.heureFin}</td>
+                    <td>${heureDebut}</td>
+                    <td>${heureFin}</td>
                     <td class="actions">
-                        <button onclick="supprimerCours(this, ${cours.id})">Supprimer</button>
+                        <button onclick="supprimerCours(this, ${cours.id})" class="btn-danger">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </button>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
         } catch (error) {
+            console.error('Erreur lors de l\'affichage des cours:', error);
             showNotification(error.message, 'error');
         }
     }
@@ -194,8 +366,44 @@ document.addEventListener('DOMContentLoaded', async function () {
         }, 3000);
     }
 
+    // Système de thèmes
+    const themeOptions = document.querySelectorAll('.theme-option');
+    const body = document.body;
+
+    // Charger le thème sauvegardé
+    const savedTheme = localStorage.getItem('selectedTheme') || 'default';
+    body.setAttribute('data-theme', savedTheme);
+    themeOptions.forEach(option => {
+        if (option.getAttribute('data-theme') === savedTheme) {
+            option.classList.add('active');
+        }
+    });
+
+    // Gérer le changement de thème
+    themeOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const theme = this.getAttribute('data-theme');
+            body.setAttribute('data-theme', theme);
+            
+            // Sauvegarder le thème
+            localStorage.setItem('selectedTheme', theme);
+            
+            // Mettre à jour l'état actif
+            themeOptions.forEach(opt => opt.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+
     // Garder le reste du code pour les animations et effets visuels
     // ... existing code ...
+
+    // Initialiser toutes les fonctionnalités
+    createParticles();
+    initParallaxEffect();
+    addShineEffect();
+    animateInputs();
+    animateTable();
+    addRippleEffect();
 });
 
 // Création des particules

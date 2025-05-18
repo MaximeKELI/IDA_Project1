@@ -517,3 +517,32 @@ body {
 .highlight-hover:hover::before {
     transform: scale(1);
 }
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.salle {
+    background: var(--glass-bg);
+    border: var(--glass-border);
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition-speed);
+    backdrop-filter: blur(5px);
+}
+
+.salle:hover {
+    transform: var(--hover-transform);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.salle.selected {
+    border: 2px solid var(--luxury-gold);
+    background: rgba(255, 255, 255, 0.2);
+}
