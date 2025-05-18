@@ -1,0 +1,6 @@
+@GestionSalles_HostAddress = http://localhost:5114
+
+GET {{GestionSalles_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

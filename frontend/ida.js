@@ -1,5 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
-    const salles = ['Salle A', 'Salle B', 'Salle C', 'Salle D'];
+document.addEventListener('DOMContentLoaded', async function () {
     const sallesList = document.getElementById('salles-list');
     const salleSelect = document.getElementById('salle');
     const coursForm = document.getElementById('cours-form');
@@ -11,163 +10,298 @@ document.addEventListener('DOMContentLoaded', function () {
     const ajouterFiliereBtn = document.getElementById('ajouter-filiere');
     const afficherTousBtn = document.getElementById('afficher-tous');
 
-    // Données par filière
-    let emploiDuTempsParFiliere = {};
+    // Charger les données initiales
+    try {
+        // Charger les filières
+        const filieres = await getFilieres();
+        filieres.forEach(filiere => {
+            const option = document.createElement('option');
+            option.value = filiere.id;
+            option.textContent = filiere.nom;
+            filiereSelect.appendChild(option);
+        });
 
-    // Afficher les salles
-    salles.forEach(salle => {
-        const salleDiv = document.createElement('div');
-        salleDiv.className = 'salle';
-        salleDiv.textContent = salle;
-        sallesList.appendChild(salleDiv);
+        // Charger les salles
+        const salles = await getSalles();
+        salles.forEach(salle => {
+            // Ajouter à la liste des salles
+            const salleDiv = document.createElement('div');
+            salleDiv.className = 'salle';
+            salleDiv.textContent = salle.nom;
+            sallesList.appendChild(salleDiv);
 
-        const option = document.createElement('option');
-        option.value = salle;
-        option.textContent = salle;
-        salleSelect.appendChild(option);
-    });
+            // Ajouter au select
+            const option = document.createElement('option');
+            option.value = salle.id;
+            option.textContent = salle.nom;
+            salleSelect.appendChild(option);
+        });
+
+        // Charger tous les cours
+        await afficherEmploiDuTemps();
+    } catch (error) {
+        showNotification(error.message, 'error');
+    }
 
     // Gérer l'ajout d'une nouvelle filière
-    ajouterFiliereBtn.addEventListener('click', function () {
+    ajouterFiliereBtn.addEventListener('click', async function () {
         const nouvelleFiliere = nouvelleFiliereInput.value.trim();
-        if (nouvelleFiliere && !emploiDuTempsParFiliere[nouvelleFiliere]) {
-            emploiDuTempsParFiliere[nouvelleFiliere] = [];
-            const option = document.createElement('option');
-            option.value = nouvelleFiliere;
-            option.textContent = nouvelleFiliere;
-            filiereSelect.appendChild(option);
-            nouvelleFiliereInput.value = ''; // Vider le champ
-        } else {
-            alert("Cette filière existe déjà ou le nom est invalide.");
+        if (nouvelleFiliere) {
+            try {
+                const filiere = await ajouterFiliere(nouvelleFiliere);
+                const option = document.createElement('option');
+                option.value = filiere.id;
+                option.textContent = filiere.nom;
+                filiereSelect.appendChild(option);
+                nouvelleFiliereInput.value = '';
+                showNotification('Filière ajoutée avec succès', 'success');
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
         }
     });
 
     // Gérer l'ajout d'un cours
-    coursForm.addEventListener('submit', function (event) {
+    coursForm.addEventListener('submit', async function (event) {
         event.preventDefault();
 
-        const filiere = filiereSelect.value;
-        const salle = salleSelect.value;
-        const cours = document.getElementById('cours').value;
-        const professeur = document.getElementById('professeur').value;
-        const jour = document.getElementById('jour').value;
-        const heureDebut = document.getElementById('heure-debut').value;
-        const heureFin = document.getElementById('heure-fin').value;
-
-        // Vérifier si la filière existe dans l'objet
-        if (!emploiDuTempsParFiliere[filiere]) {
-            emploiDuTempsParFiliere[filiere] = []; // Créer un tableau vide pour la filière
-        }
-
-        // Créer un nouvel objet cours
         const nouveauCours = {
-            filiere,
-            salle,
-            cours,
-            professeur,
-            jour,
-            heureDebut,
-            heureFin,
+            filiereId: parseInt(filiereSelect.value),
+            salleId: parseInt(salleSelect.value),
+            nom: document.getElementById('cours').value,
+            professeur: document.getElementById('professeur').value,
+            jour: document.getElementById('jour').value,
+            heureDebut: document.getElementById('heure-debut').value,
+            heureFin: document.getElementById('heure-fin').value
         };
 
-        // Ajouter le cours à la filière sélectionnée
-        emploiDuTempsParFiliere[filiere].push(nouveauCours);
-
-        // Mettre à jour l'affichage en ajoutant uniquement le nouveau cours
-        afficherEmploiDuTemps(filiere, nouveauCours);
-        coursForm.reset();
+        try {
+            await ajouterCours(nouveauCours);
+            coursForm.reset();
+            await afficherEmploiDuTemps();
+            showNotification('Cours ajouté avec succès', 'success');
+        } catch (error) {
+            showNotification(error.message, 'error');
+        }
     });
 
     // Gérer la suppression d'un cours
-    window.supprimerCours = function (button, filiere) {
-        const row = button.closest('tr');
-        const index = row.rowIndex - 1; // Ignorer la ligne d'en-tête
-        emploiDuTempsParFiliere[filiere].splice(index, 1);
-
-        // Mettre à jour l'affichage complet après suppression
-        afficherEmploiDuTemps(filiere);
+    window.supprimerCours = async function (button, coursId) {
+        try {
+            await supprimerCours(coursId);
+            await afficherEmploiDuTemps();
+            showNotification('Cours supprimé avec succès', 'success');
+        } catch (error) {
+            showNotification(error.message, 'error');
+        }
     };
 
     // Gérer le téléchargement du PDF
-    telechargerPdfBtn.addEventListener('click', function () {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
+    telechargerPdfBtn.addEventListener('click', async function () {
+        try {
+            const cours = await getCours();
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
 
-        // Titre du document
-        doc.setFontSize(18);
-        doc.text("Emploi du Temps", 10, 10);
+            // Titre du document
+            doc.setFontSize(18);
+            doc.text("Emploi du Temps", 10, 10);
 
-        // En-têtes du tableau
-        const headers = ["Filière", "Salle", "Cours", "Professeur", "Jour", "Heure de début", "Heure de fin"];
-        let data = [];
-        data.push(headers);
+            // Préparer les données pour le tableau
+            const data = cours.map(c => [
+                c.filiere.nom,
+                c.salle.nom,
+                c.nom,
+                c.professeur,
+                c.jour,
+                c.heureDebut,
+                c.heureFin
+            ]);
 
-        // Parcourir toutes les filières
-        for (const filiere in emploiDuTempsParFiliere) {
-            if (emploiDuTempsParFiliere[filiere].length > 0) {
-                emploiDuTempsParFiliere[filiere].forEach(cours => {
-                    data.push([cours.filiere, cours.salle, cours.cours, cours.professeur, cours.jour, cours.heureDebut, cours.heureFin]);
-                });
-            }
+            // Générer le tableau dans le PDF
+            doc.autoTable({
+                startY: 20,
+                head: [["Filière", "Salle", "Cours", "Professeur", "Jour", "Début", "Fin"]],
+                body: data,
+            });
+
+            // Télécharger le PDF
+            doc.save('emploi_du_temps.pdf');
+        } catch (error) {
+            showNotification(error.message, 'error');
         }
-
-        // Générer le tableau dans le PDF
-        doc.autoTable({
-            startY: 20,
-            head: [headers],
-            body: data.slice(1),
-        });
-
-        // Télécharger le PDF
-        doc.save(`emploi_du_temps.pdf`);
     });
 
     // Afficher tous les cours
-    afficherTousBtn.addEventListener('click', function () {
-        afficherEmploiDuTemps();
+    afficherTousBtn.addEventListener('click', async function () {
+        await afficherEmploiDuTemps();
     });
 
-    // Afficher l'emploi du temps pour la filière sélectionnée
-    function afficherEmploiDuTemps(filiere = null, nouveauCours = null) {
-        tbody.innerHTML = ''; // Vider le contenu actuel du tbody
+    // Afficher l'emploi du temps
+    async function afficherEmploiDuTemps(filiereId = null) {
+        try {
+            tbody.innerHTML = '';
+            const cours = filiereId ? await getCoursByFiliere(filiereId) : await getCours();
 
-        let hasData = false;
-
-        // Parcourir toutes les filières
-        for (const f in emploiDuTempsParFiliere) {
-            if (filiere && f !== filiere) continue; // Filtrer par filière si spécifiée
-
-            if (emploiDuTempsParFiliere[f].length > 0) {
-                hasData = true;
-                emploiDuTempsParFiliere[f].forEach((cours, index) => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${cours.filiere}</td>
-                        <td>${cours.salle}</td>
-                        <td>${cours.cours}</td>
-                        <td>${cours.professeur}</td>
-                        <td>${cours.jour}</td>
-                        <td>${cours.heureDebut}</td>
-                        <td>${cours.heureFin}</td>
-                        <td class="actions">
-                            <button onclick="supprimerCours(this, '${f}')">Supprimer</button>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
+            if (cours.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="8" style="text-align: center;">Aucun cours disponible.</td>
+                `;
+                tbody.appendChild(row);
+                return;
             }
-        }
 
-        // Afficher un message si aucune donnée n'est disponible
-        if (!hasData) {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td colspan="8" style="text-align: center;">Aucun cours disponible.</td>
-            `;
-            tbody.appendChild(row);
+            cours.forEach(cours => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${cours.filiere.nom}</td>
+                    <td>${cours.salle.nom}</td>
+                    <td>${cours.nom}</td>
+                    <td>${cours.professeur}</td>
+                    <td>${cours.jour}</td>
+                    <td>${cours.heureDebut}</td>
+                    <td>${cours.heureFin}</td>
+                    <td class="actions">
+                        <button onclick="supprimerCours(this, ${cours.id})">Supprimer</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        } catch (error) {
+            showNotification(error.message, 'error');
         }
     }
 
-    // Afficher l'emploi du temps initial (vide)
-    afficherEmploiDuTemps();
+    // Système de notification
+    function showNotification(message, type = 'success') {
+        const notification = document.getElementById('notification');
+        const notificationMessage = document.getElementById('notification-message');
+        
+        notificationMessage.textContent = message;
+        notification.className = `notification ${type}`;
+        notification.style.display = 'block';
+        
+        setTimeout(() => {
+            notification.style.opacity = '1';
+        }, 10);
+        
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 500);
+        }, 3000);
+    }
+
+    // Garder le reste du code pour les animations et effets visuels
+    // ... existing code ...
 });
+
+// Création des particules
+function createParticles() {
+    const particlesContainer = document.createElement('div');
+    particlesContainer.className = 'particles';
+    document.body.appendChild(particlesContainer);
+
+    for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.animationDelay = `${Math.random() * 20}s`;
+        particle.style.opacity = Math.random();
+        particlesContainer.appendChild(particle);
+    }
+}
+
+// Effet de parallaxe sur le mouvement de la souris
+function initParallaxEffect() {
+    document.addEventListener('mousemove', (e) => {
+        const sections = document.querySelectorAll('section');
+        const mouseX = e.clientX / window.innerWidth;
+        const mouseY = e.clientY / window.innerHeight;
+
+        sections.forEach((section) => {
+            const rect = section.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            const moveX = (centerX - e.clientX) / 50;
+            const moveY = (centerY - e.clientY) / 50;
+
+            section.style.transform = `translate(${moveX}px, ${moveY}px) scale(1.02)`;
+        });
+    });
+}
+
+// Effet de brillance au survol
+function addShineEffect() {
+    const buttons = document.querySelectorAll('button');
+    buttons.forEach(button => {
+        button.addEventListener('mousemove', (e) => {
+            const rect = button.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            button.style.setProperty('--shine-x', `${x}px`);
+            button.style.setProperty('--shine-y', `${y}px`);
+        });
+    });
+}
+
+// Animation des inputs
+function animateInputs() {
+    const inputs = document.querySelectorAll('input, select');
+    inputs.forEach(input => {
+        input.addEventListener('focus', () => {
+            input.parentElement.classList.add('focused');
+            input.style.transform = 'scale(1.02)';
+        });
+
+        input.addEventListener('blur', () => {
+            input.parentElement.classList.remove('focused');
+            input.style.transform = 'scale(1)';
+        });
+    });
+}
+
+// Animation du tableau
+function animateTable() {
+    const rows = document.querySelectorAll('#emploi-du-temps-table tbody tr');
+    rows.forEach((row, index) => {
+        row.style.animation = `slideIn 0.5s ease-out ${index * 0.1}s forwards`;
+        row.style.opacity = '0';
+        
+        row.addEventListener('mouseenter', () => {
+            row.style.transform = 'scale(1.02)';
+            row.style.background = 'rgba(255, 255, 255, 0.1)';
+        });
+
+        row.addEventListener('mouseleave', () => {
+            row.style.transform = 'scale(1)';
+            row.style.background = 'transparent';
+        });
+    });
+}
+
+// Effet de vague sur les boutons
+function addRippleEffect() {
+    document.querySelectorAll('button').forEach(button => {
+        button.addEventListener('click', function(e) {
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple';
+            this.appendChild(ripple);
+
+            const rect = button.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+
+            ripple.style.width = ripple.style.height = `${size}px`;
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
+
+            setTimeout(() => ripple.remove(), 1000);
+        });
+    });
+}

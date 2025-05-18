@@ -5,93 +5,145 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des Salles de Cours</title>
     <link rel="stylesheet" href="ida.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="theme-transition">
+    <div class="theme-selector">
+        <div class="theme-option" data-theme="default" style="background: linear-gradient(135deg, #24C6DC, #514A9D);" title="Thème par défaut"></div>
+        <div class="theme-option" data-theme="royal" style="background: linear-gradient(135deg, #141E30, #243B55);" title="Thème Royal"></div>
+        <div class="theme-option" data-theme="emerald" style="background: linear-gradient(135deg, #134E5E, #71B280);" title="Thème Émeraude"></div>
+        <div class="theme-option" data-theme="sunset" style="background: linear-gradient(135deg, #FF512F, #DD2476);" title="Thème Sunset"></div>
+    </div>
+
+    <div class="loading-overlay">
+        <div class="loading"></div>
+    </div>
     
-    <img src="../images/esaimage.png" alt="ESA Image">
+    <div class="logo-container">
+        <img src="../images/esaimage.png" alt="ESA Image" class="logo-animation floating">
+    </div>
 
     <header>
-        <h1>Gestion des Salles de Cours</h1>
+        <h1 class="neon-text"><i class="fas fa-university"></i> Gestion des Salles de Cours</h1>
+        <p class="subtitle highlight-hover">Système de gestion moderne et efficace</p>
     </header>
 
     <main>
         <!-- Sélection de la filière -->
-        <section id="filiere-section">
-            <h2>Filière</h2>
-            <label for="filiere">Choisir une filière:</label>
-            <select id="filiere" name="filiere" required>
-            
-            </select>
-            <input type="text" id="nouvelle-filiere" placeholder="Entrez une nouvelle filière">
-            <button id="ajouter-filiere">Ajouter une filière</button>
+        <section id="filiere-section" class="card-hover card-3d">
+            <h2 class="neon-text"><i class="fas fa-graduation-cap"></i> Filière</h2>
+            <div class="input-group tooltip-luxury" data-tooltip="Sélectionnez votre filière">
+                <label for="filiere">Choisir une filière:</label>
+                <select id="filiere" name="filiere" required>
+                </select>
+            </div>
+            <div class="input-group">
+                <input type="text" id="nouvelle-filiere" placeholder="Entrez une nouvelle filière" class="highlight-hover">
+                <button id="ajouter-filiere" class="btn-primary highlight-hover">
+                    <i class="fas fa-plus"></i> Ajouter une filière
+                </button>
+            </div>
         </section>
 
         <!-- Liste des salles -->
-        <section id="salles">
-            <h2>Liste des Salles</h2>
-            <div id="salles-list"></div>
+        <section id="salles" class="card-hover card-3d">
+            <h2 class="neon-text"><i class="fas fa-door-open"></i> Liste des Salles</h2>
+            <div class="search-container tooltip-luxury" data-tooltip="Rechercher une salle">
+                <input type="text" id="search-salle" placeholder="Rechercher une salle..." class="highlight-hover">
+                <i class="fas fa-search search-icon"></i>
+            </div>
+            <div id="salles-list" class="grid-container"></div>
         </section>
 
         <!-- Ajouter un cours -->
-        <section id="ajout-cours">
-            <h2>Ajouter un Cours</h2>
-            <form id="cours-form">
-                <label for="salle">Salle:</label>
-                <select id="salle" name="salle" required></select>
+        <section id="ajout-cours" class="card-hover card-3d">
+            <h2 class="neon-text"><i class="fas fa-book"></i> Ajouter un Cours</h2>
+            <form id="cours-form" class="modern-form">
+                <div class="form-grid">
+                    <div class="input-group tooltip-luxury" data-tooltip="Sélectionnez une salle">
+                        <label for="salle"><i class="fas fa-door-closed"></i> Salle:</label>
+                        <select id="salle" name="salle" required class="highlight-hover"></select>
+                    </div>
 
-                <label for="cours">Nom du Cours:</label>
-                <input type="text" id="cours" name="cours" required>
+                    <div class="input-group tooltip-luxury" data-tooltip="Entrez le nom du cours">
+                        <label for="cours"><i class="fas fa-book-open"></i> Nom du Cours:</label>
+                        <input type="text" id="cours" name="cours" required class="highlight-hover">
+                    </div>
 
-                <label for="professeur">Professeur:</label>
-                <input type="text" id="professeur" name="professeur" required>
+                    <div class="input-group tooltip-luxury" data-tooltip="Nom du professeur">
+                        <label for="professeur"><i class="fas fa-chalkboard-teacher"></i> Professeur:</label>
+                        <input type="text" id="professeur" name="professeur" required class="highlight-hover">
+                    </div>
 
-                <label for="jour">Jour:</label>
-                <select id="jour" name="jour" required>
-                    <option value="Lundi">Lundi</option>
-                    <option value="Mardi">Mardi</option>
-                    <option value="Mercredi">Mercredi</option>
-                    <option value="Jeudi">Jeudi</option>
-                    <option value="Vendredi">Vendredi</option>
-                    <option value="Samedi">Samedi</option>
-                </select>
+                    <div class="input-group tooltip-luxury" data-tooltip="Jour du cours">
+                        <label for="jour"><i class="fas fa-calendar-day"></i> Jour:</label>
+                        <select id="jour" name="jour" required class="highlight-hover">
+                            <option value="Lundi">Lundi</option>
+                            <option value="Mardi">Mardi</option>
+                            <option value="Mercredi">Mercredi</option>
+                            <option value="Jeudi">Jeudi</option>
+                            <option value="Vendredi">Vendredi</option>
+                            <option value="Samedi">Samedi</option>
+                        </select>
+                    </div>
 
-                <label for="heure-debut">Heure de début:</label>
-                <input type="time" id="heure-debut" name="heure-debut" required>
+                    <div class="input-group tooltip-luxury" data-tooltip="Heure de début">
+                        <label for="heure-debut"><i class="fas fa-clock"></i> Heure de début:</label>
+                        <input type="time" id="heure-debut" name="heure-debut" required class="highlight-hover">
+                    </div>
 
-                <label for="heure-fin">Heure de fin:</label>
-                <input type="time" id="heure-fin" name="heure-fin" required>
+                    <div class="input-group tooltip-luxury" data-tooltip="Heure de fin">
+                        <label for="heure-fin"><i class="fas fa-clock"></i> Heure de fin:</label>
+                        <input type="time" id="heure-fin" name="heure-fin" required class="highlight-hover">
+                    </div>
+                </div>
 
-                <button type="submit">Ajouter le Cours</button>
+                <button type="submit" class="btn-primary pulse-animation highlight-hover">
+                    <i class="fas fa-plus-circle"></i> Ajouter le Cours
+                </button>
             </form>
         </section>
 
         <!-- Emploi du temps -->
-        <section id="emploi-du-temps">
-            <h2>Emploi du Temps</h2>
-            <button id="telecharger-pdf">Télécharger l'emploi du temps en PDF</button>
-            <button id="afficher-tous">Afficher tous les cours</button>
-            <table id="emploi-du-temps-table">
-                <thead>
-                    <tr>
-                        <th>Filière</th>
-                        <th>Salle</th>
-                        <th>Cours</th>
-                        <th>Professeur</th>
-                        <th>Jour</th>
-                        <th>Heure de début</th>
-                        <th>Heure de fin</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+        <section id="emploi-du-temps" class="card-hover card-3d">
+            <h2 class="neon-text"><i class="fas fa-calendar-alt"></i> Emploi du Temps</h2>
+            <div class="actions-container">
+                <button id="telecharger-pdf" class="btn-secondary highlight-hover tooltip-luxury" data-tooltip="Télécharger en PDF">
+                    <i class="fas fa-file-pdf"></i> Télécharger PDF
+                </button>
+                <button id="afficher-tous" class="btn-secondary highlight-hover tooltip-luxury" data-tooltip="Afficher tous les cours">
+                    <i class="fas fa-list"></i> Tous les cours
+                </button>
+            </div>
+            <div class="table-container">
+                <table id="emploi-du-temps-table">
+                    <thead>
+                        <tr>
+                            <th class="highlight-hover"><i class="fas fa-graduation-cap"></i> Filière</th>
+                            <th class="highlight-hover"><i class="fas fa-door-open"></i> Salle</th>
+                            <th class="highlight-hover"><i class="fas fa-book"></i> Cours</th>
+                            <th class="highlight-hover"><i class="fas fa-user"></i> Professeur</th>
+                            <th class="highlight-hover"><i class="fas fa-calendar"></i> Jour</th>
+                            <th class="highlight-hover"><i class="fas fa-clock"></i> Début</th>
+                            <th class="highlight-hover"><i class="fas fa-clock"></i> Fin</th>
+                            <th class="highlight-hover"><i class="fas fa-cogs"></i> Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </section>
     </main>
 
+    <div id="notification" class="notification modal-luxury" style="display: none;">
+        <i class="fas fa-info-circle"></i>
+        <span id="notification-message"></span>
+    </div>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-    
+    <script src="api.js"></script>
     <script src="ida.js"></script>
 </body>
 </html>
