@@ -210,10 +210,33 @@ document.addEventListener('DOMContentLoaded', async function () {
     // Gérer la suppression d'un cours
     window.supprimerCours = async function (button, coursId) {
         try {
-            await supprimerCours(coursId);
-            await afficherEmploiDuTemps();
+            const response = await fetch(`${API_BASE_URL}/cours/${coursId}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                throw new Error('Erreur lors de la suppression du cours');
+            }
+
+            // Supprimer la ligne du tableau directement
+            const row = button.closest('tr');
+            if (row) {
+                row.remove();
+            }
+
+            // Si le tableau est vide, afficher le message "Aucun cours disponible"
+            const tbody = document.querySelector('#emploi-du-temps-table tbody');
+            if (tbody.children.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="8" style="text-align: center;">Aucun cours disponible.</td>
+                `;
+                tbody.appendChild(row);
+            }
+
             showNotification('Cours supprimé avec succès', 'success');
         } catch (error) {
+            console.error('Erreur lors de la suppression:', error);
             showNotification(error.message, 'error');
         }
     };
