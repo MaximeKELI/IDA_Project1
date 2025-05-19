@@ -144,5 +144,5 @@ Pour toute question ou problème :
 Ce projet est sous licence MIT. Voir le fichier LICENSE pour plus de détails.
 
 # pour clonner : 
-
-- git clone https://github.com/MaximeKELI/IDA_Project1.git
+```bash
+git clone https://github.com/MaximeKELI/IDA_Project1.git
